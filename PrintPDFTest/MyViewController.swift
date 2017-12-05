@@ -13,16 +13,23 @@ class MyViewController: UIViewController, WKUIDelegate {
     
     var tableHeight: Int = 745
     
-    let greenPage: String = "green"
-    let redPage: String = "red"
-    
     var webView: WKWebView!
-    var htmlResource: String = ""
+    var htmlResource: String = "sample"
     
-    var state: ViewState = ViewState.html
+    var viewState: ViewState = ViewState.html
+    var colorState: ColorState = ColorState.green
+    var alignState: AlignState = AlignState.left
     
     enum ViewState {
         case html, portrait, landscape
+    }
+    enum ColorState: String {
+        case green = "lightgreen"
+        case red = "coral"
+    }
+    enum AlignState: String {
+        case center = "center"
+        case left = "left"
     }
     
     // US Letter paper size
@@ -37,8 +44,6 @@ class MyViewController: UIViewController, WKUIDelegate {
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.uiDelegate = self
         view = webView
-        htmlResource = greenPage
-        self.title = "HTML Page " + tableHeight.description
     }
     
     override func viewDidLoad() {
@@ -46,10 +51,11 @@ class MyViewController: UIViewController, WKUIDelegate {
         // Do any additional setup after loading the view, typically from a nib.
         self.navigationController?.isToolbarHidden = false
         htmlButtonPressed(self)
+        self.title = "HTML Page " + tableHeight.description
     }
     
     func refreshView() {
-        switch state {
+        switch viewState {
         case ViewState.html:
             htmlButtonPressed(self)
         case ViewState.portrait:
@@ -66,6 +72,8 @@ class MyViewController: UIViewController, WKUIDelegate {
             // Load the HTML template code into a String variable.
             var html = try String(contentsOfFile: path)
             html = html.replacingOccurrences(of: "#HEIGHT#", with: tableHeight.description)
+            html = html.replacingOccurrences(of: "#COLOR#", with: colorState.rawValue)
+            html = html.replacingOccurrences(of: "#ALIGN#", with: alignState.rawValue)
             return html
         } catch {
             print("Error: " + error.localizedDescription)
@@ -100,7 +108,7 @@ class MyViewController: UIViewController, WKUIDelegate {
         if let html = getHTML() {
             webView.loadHTMLString(html, baseURL: nil)
             self.title = "HTML Page " + tableHeight.description
-            state = ViewState.html
+            viewState = ViewState.html
         } else {
             loadErrorPage()
         }
@@ -115,7 +123,7 @@ class MyViewController: UIViewController, WKUIDelegate {
             baseURL.deleteLastPathComponent()
             webView.load(data, mimeType: "application/pdf", characterEncodingName:"", baseURL: baseURL)
             self.title = "PDF Portrait " + tableHeight.description
-            state = ViewState.portrait
+            viewState = ViewState.portrait
         } else {
             loadErrorPage()
         }
@@ -130,7 +138,7 @@ class MyViewController: UIViewController, WKUIDelegate {
             baseURL.deleteLastPathComponent()
             webView.load(data, mimeType: "application/pdf", characterEncodingName:"", baseURL: baseURL)
             self.title = "PDF Landscape " + tableHeight.description
-            state = ViewState.landscape
+            viewState = ViewState.landscape
         } else {
             loadErrorPage()
         }
@@ -138,13 +146,15 @@ class MyViewController: UIViewController, WKUIDelegate {
     
     // Green Button
     @IBAction func greenButtonPressed(_ sender: Any) {
-        htmlResource = greenPage
+        colorState = ColorState.green
+        alignState = AlignState.left
         refreshView()
     }
     
     // Red Button
     @IBAction func redButtonPressed(_ sender: Any) {
-        htmlResource = redPage
+        colorState = ColorState.red
+        alignState = AlignState.center
         refreshView()
     }
 }
